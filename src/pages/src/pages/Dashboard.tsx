@@ -173,7 +173,7 @@ const Dashboard: React.FC = () => {
                     <div>
                       <p className="font-medium text-gray-900">{session.scenarioTitle}</p>
                       <p className="text-sm text-gray-500">
-                        {new Date(session.completedAt).toLocaleDateString()} • {session.timeSpent}m
+                        {(session.completedAt instanceof Date ? session.completedAt : new Date(session.completedAt)).toLocaleDateString()} • {session.timeSpent}m
                       </p>
                     </div>
                   </div>

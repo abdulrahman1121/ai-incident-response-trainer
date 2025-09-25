@@ -33,6 +33,8 @@ interface TrainingState {
   trainingHistory: TrainingSession[];
   trainingStats: TrainingStats;
   currentSessionStartTime: Date | null;
+  sessionTimeoutId: NodeJS.Timeout | null;
+  sessionDuration: number; // in minutes
   
   // Actions
   loadScenarios: () => void;
@@ -46,6 +48,9 @@ interface TrainingState {
   getScenariosByCategory: (category: string) => TrainingScenario[];
   getTrainingStats: () => TrainingStats;
   getRecentSessions: (limit?: number) => TrainingSession[];
+  startSessionTimeout: () => void;
+  clearSessionTimeout: () => void;
+  extendSession: () => void;
 }
 
 export const useTrainingStore = create<TrainingState>()(
@@ -68,6 +73,8 @@ export const useTrainingStore = create<TrainingState>()(
         scenariosCompleted: []
       },
       currentSessionStartTime: null,
+      sessionTimeoutId: null,
+      sessionDuration: 5, // 5 minutes
 
       loadScenarios: () => {
         set({ isLoading: true });
@@ -98,12 +105,15 @@ export const useTrainingStore = create<TrainingState>()(
               currentSessionStartTime: sessionStartTime,
               chatMessages: [{
                 id: Date.now().toString(),
-                message: `🎯 **Starting Training: ${scenario.title}**\n\n${scenario.description}\n\n**Difficulty:** ${scenario.difficulty}\n**Category:** ${scenario.category}\n\nLet's begin! What would you like to do first?`,
+                message: `🎯 **Starting Training: ${scenario.title}**\n\n${scenario.description}\n\n**Difficulty:** ${scenario.difficulty}\n**Category:** ${scenario.category}\n\n⏰ **Session Time:** 5 minutes\n\nLet's begin! What would you like to do first?`,
                 type: 'ai' as const,
                 timestamp: new Date()
               }],
               isLoading: false
             });
+            
+            // Start session timeout
+            get().startSessionTimeout();
             
             return true;
           }
@@ -119,6 +129,9 @@ export const useTrainingStore = create<TrainingState>()(
       endTraining: () => {
         const finalScore = mockAIService.endTraining();
         const state = get();
+        
+        // Clear session timeout
+        get().clearSessionTimeout();
         
         if (state.currentScenario && state.currentSessionStartTime) {
           const sessionEndTime = new Date();
@@ -160,7 +173,8 @@ export const useTrainingStore = create<TrainingState>()(
             progress: { current: 0, total: 0, score: 0, percentage: 0 },
             trainingHistory: updatedHistory,
             trainingStats: updatedStats,
-            currentSessionStartTime: null
+            currentSessionStartTime: null,
+            sessionTimeoutId: null
           });
         } else {
           set({
@@ -168,7 +182,8 @@ export const useTrainingStore = create<TrainingState>()(
             currentStep: null,
             isTrainingActive: false,
             progress: { current: 0, total: 0, score: 0, percentage: 0 },
-            currentSessionStartTime: null
+            currentSessionStartTime: null,
+            sessionTimeoutId: null
           });
         }
         
@@ -272,8 +287,92 @@ export const useTrainingStore = create<TrainingState>()(
       getRecentSessions: (limit: number = 10) => {
         const history = get().trainingHistory;
         return history
-          .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime())
+          .sort((a, b) => {
+            const dateA = a.completedAt instanceof Date ? a.completedAt : new Date(a.completedAt);
+            const dateB = b.completedAt instanceof Date ? b.completedAt : new Date(b.completedAt);
+            return dateB.getTime() - dateA.getTime();
+          })
           .slice(0, limit);
+      },
+
+      startSessionTimeout: () => {
+        const state = get();
+        if (state.sessionTimeoutId) {
+          clearTimeout(state.sessionTimeoutId);
+        }
+        
+        const timeoutId = setTimeout(() => {
+          const currentState = get();
+          if (currentState.isTrainingActive) {
+            // Add timeout message to chat
+            const timeoutMessage = {
+              id: Date.now().toString(),
+              message: `⏰ **Session Timeout**\n\nYour 5-minute training session has expired. The session will now end automatically.`,
+              type: 'ai' as const,
+              timestamp: new Date()
+            };
+            
+            set(state => ({
+              chatMessages: [...state.chatMessages, timeoutMessage]
+            }));
+            
+            // End the training session
+            setTimeout(() => {
+              get().endTraining();
+            }, 2000); // Give user 2 seconds to read the message
+          }
+        }, state.sessionDuration * 60 * 1000); // Convert minutes to milliseconds
+        
+        set({ sessionTimeoutId: timeoutId });
+      },
+
+      clearSessionTimeout: () => {
+        const state = get();
+        if (state.sessionTimeoutId) {
+          clearTimeout(state.sessionTimeoutId);
+          set({ sessionTimeoutId: null });
+        }
+      },
+
+      extendSession: () => {
+        const state = get();
+        if (state.isTrainingActive) {
+          // Add extension message
+          const extensionMessage = {
+            id: Date.now().toString(),
+            message: `⏰ **Session Extended**\n\nYour session has been extended by 2 minutes. Continue your training!`,
+            type: 'ai' as const,
+            timestamp: new Date()
+          };
+          
+          set(state => ({
+            chatMessages: [...state.chatMessages, extensionMessage]
+          }));
+          
+          // Restart timeout with additional 2 minutes
+          get().clearSessionTimeout();
+          const newTimeoutId = setTimeout(() => {
+            const currentState = get();
+            if (currentState.isTrainingActive) {
+              const timeoutMessage = {
+                id: Date.now().toString(),
+                message: `⏰ **Session Timeout**\n\nYour extended training session has expired. The session will now end automatically.`,
+                type: 'ai' as const,
+                timestamp: new Date()
+              };
+              
+              set(state => ({
+                chatMessages: [...state.chatMessages, timeoutMessage]
+              }));
+              
+              setTimeout(() => {
+                get().endTraining();
+              }, 2000);
+            }
+          }, 2 * 60 * 1000); // 2 additional minutes
+          
+          set({ sessionTimeoutId: newTimeoutId });
+        }
       }
     }),
     {
@@ -287,8 +386,32 @@ export const useTrainingStore = create<TrainingState>()(
         chatMessages: state.chatMessages,
         trainingHistory: state.trainingHistory,
         trainingStats: state.trainingStats,
-        currentSessionStartTime: state.currentSessionStartTime
-      })
+        currentSessionStartTime: state.currentSessionStartTime,
+        sessionDuration: state.sessionDuration
+        // Note: sessionTimeoutId is not persisted as it's a browser-specific timer
+      }),
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          // Convert string dates back to Date objects after rehydration
+          if (state.trainingHistory) {
+            state.trainingHistory = state.trainingHistory.map(session => ({
+              ...session,
+              completedAt: new Date(session.completedAt)
+            }));
+          }
+          
+          if (state.chatMessages) {
+            state.chatMessages = state.chatMessages.map(msg => ({
+              ...msg,
+              timestamp: new Date(msg.timestamp)
+            }));
+          }
+          
+          if (state.currentSessionStartTime) {
+            state.currentSessionStartTime = new Date(state.currentSessionStartTime);
+          }
+        }
+      }
     }
   )
 );
