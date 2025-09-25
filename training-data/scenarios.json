@@ -1,0 +1,411 @@
+{
+  "scenarios": [
+    {
+      "id": "malware-detection-001",
+      "title": "Ransomware Attack Simulation",
+      "description": "A simulated ransomware attack targeting critical infrastructure. Practice detection, containment, and recovery procedures.",
+      "severity": "critical",
+      "category": {
+        "id": "malware",
+        "name": "Malware Infection",
+        "description": "Detection and response to malicious software",
+        "commonIndicators": [
+          "Unusual network traffic patterns",
+          "File encryption activities",
+          "Ransom notes appearing",
+          "System performance degradation"
+        ],
+        "responseProcedures": [
+          "Isolate affected systems immediately",
+          "Assess scope and impact",
+          "Preserve evidence for forensics",
+          "Restore from clean backups",
+          "Implement additional security controls"
+        ]
+      },
+      "steps": [
+        {
+          "id": "detect",
+          "title": "Initial Detection",
+          "description": "Identify signs of ransomware activity on the network",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Check for encrypted files with unusual extensions",
+            "Look for ransom notes in common locations",
+            "Monitor network traffic for suspicious patterns",
+            "Check system logs for unusual activities"
+          ],
+          "validationCriteria": [
+            "Ransomware variant identified",
+            "Affected systems documented",
+            "Initial impact assessment completed"
+          ],
+          "nextSteps": ["containment"]
+        },
+        {
+          "id": "contain",
+          "title": "Containment",
+          "description": "Isolate affected systems to prevent further spread",
+          "type": "action",
+          "required": true,
+          "hints": [
+            "Disconnect affected systems from network",
+            "Power down systems if necessary",
+            "Block suspicious network traffic",
+            "Isolate backup systems"
+          ],
+          "validationCriteria": [
+            "All affected systems isolated",
+            "Network access blocked",
+            "Backup systems protected"
+          ],
+          "nextSteps": ["assessment"]
+        },
+        {
+          "id": "assess",
+          "title": "Impact Assessment",
+          "description": "Determine the full scope and impact of the attack",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Inventory all affected systems",
+            "Identify encrypted data types",
+            "Assess business impact",
+            "Document attack timeline"
+          ],
+          "validationCriteria": [
+            "Complete system inventory",
+            "Data loss assessment completed",
+            "Business impact documented"
+          ],
+          "nextSteps": ["recovery"]
+        },
+        {
+          "id": "recover",
+          "title": "Recovery",
+          "description": "Restore systems and data from clean backups",
+          "type": "action",
+          "required": true,
+          "hints": [
+            "Verify backup integrity",
+            "Restore systems in isolated environment",
+            "Test restored systems thoroughly",
+            "Implement additional security measures"
+          ],
+          "validationCriteria": [
+            "Systems restored successfully",
+            "Data integrity verified",
+            "Security controls implemented"
+          ],
+          "nextSteps": ["lessons-learned"]
+        }
+      ],
+      "expectedOutcomes": [
+        "Understand ransomware attack patterns and indicators",
+        "Practice rapid containment procedures",
+        "Learn proper evidence preservation techniques",
+        "Master recovery procedures and testing protocols"
+      ],
+      "difficulty": "intermediate",
+      "estimatedDuration": 45,
+      "tags": ["ransomware", "containment", "recovery", "critical-infrastructure", "forensics"]
+    },
+    {
+      "id": "phishing-response-001",
+      "title": "Spear Phishing Campaign",
+      "description": "Respond to a sophisticated spear phishing campaign targeting executive staff with credential harvesting attempts.",
+      "severity": "high",
+      "category": {
+        "id": "phishing",
+        "name": "Phishing Attack",
+        "description": "Social engineering attacks via email or other vectors",
+        "commonIndicators": [
+          "Suspicious email patterns",
+          "User reports of suspicious emails",
+          "Credential compromise indicators",
+          "Unusual login attempts"
+        ],
+        "responseProcedures": [
+          "Block malicious domains and IPs",
+          "Reset compromised credentials",
+          "Scan for additional compromises",
+          "Educate affected users",
+          "Update security controls"
+        ]
+      },
+      "steps": [
+        {
+          "id": "analyze",
+          "title": "Email Analysis",
+          "description": "Analyze the phishing email for indicators and attack vectors",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Check sender reputation and domain",
+            "Examine URLs and attachments",
+            "Look for urgency tactics and social engineering",
+            "Analyze email headers"
+          ],
+          "validationCriteria": [
+            "Phishing indicators identified",
+            "Attack vector determined",
+            "Threat level assessed"
+          ],
+          "nextSteps": ["containment"]
+        },
+        {
+          "id": "contain",
+          "title": "Containment",
+          "description": "Block malicious domains and prevent further access",
+          "type": "action",
+          "required": true,
+          "hints": [
+            "Block malicious domains at firewall",
+            "Quarantine suspicious emails",
+            "Reset potentially compromised credentials",
+            "Monitor for additional attempts"
+          ],
+          "validationCriteria": [
+            "Malicious domains blocked",
+            "Emails quarantined",
+            "Credentials reset"
+          ],
+          "nextSteps": ["investigation"]
+        },
+        {
+          "id": "investigate",
+          "title": "Investigation",
+          "description": "Investigate potential compromises and data access",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Check login logs for suspicious activity",
+            "Scan systems for malware",
+            "Review email access logs",
+            "Assess data exposure"
+          ],
+          "validationCriteria": [
+            "Compromise assessment completed",
+            "Data exposure evaluated",
+            "Additional threats identified"
+          ],
+          "nextSteps": ["remediation"]
+        }
+      ],
+      "expectedOutcomes": [
+        "Identify phishing indicators and attack patterns",
+        "Practice email analysis techniques",
+        "Understand credential protection procedures",
+        "Learn investigation and remediation steps"
+      ],
+      "difficulty": "beginner",
+      "estimatedDuration": 30,
+      "tags": ["phishing", "email-analysis", "credential-protection", "social-engineering"]
+    },
+    {
+      "id": "ddos-mitigation-001",
+      "title": "DDoS Attack Response",
+      "description": "Handle a large-scale DDoS attack affecting multiple services and implement mitigation strategies.",
+      "severity": "high",
+      "category": {
+        "id": "ddos",
+        "name": "DDoS Attack",
+        "description": "Distributed denial of service attacks",
+        "commonIndicators": [
+          "Unusual traffic spikes",
+          "Service unavailability",
+          "Network congestion",
+          "Resource exhaustion"
+        ],
+        "responseProcedures": [
+          "Activate DDoS mitigation services",
+          "Scale resources if possible",
+          "Implement rate limiting",
+          "Monitor attack patterns",
+          "Coordinate with ISP"
+        ]
+      },
+      "steps": [
+        {
+          "id": "detect",
+          "title": "Traffic Analysis",
+          "description": "Analyze traffic patterns to confirm DDoS attack",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Check traffic volume and patterns",
+            "Identify attack sources and methods",
+            "Monitor resource utilization",
+            "Analyze service availability"
+          ],
+          "validationCriteria": [
+            "DDoS attack confirmed",
+            "Attack type identified",
+            "Impact assessment completed"
+          ],
+          "nextSteps": ["mitigation"]
+        },
+        {
+          "id": "mitigate",
+          "title": "Mitigation",
+          "description": "Implement DDoS mitigation strategies",
+          "type": "action",
+          "required": true,
+          "hints": [
+            "Activate DDoS protection services",
+            "Implement rate limiting",
+            "Block malicious IP ranges",
+            "Scale resources if needed"
+          ],
+          "validationCriteria": [
+            "Mitigation services activated",
+            "Rate limiting implemented",
+            "Malicious traffic blocked"
+          ],
+          "nextSteps": ["monitoring"]
+        },
+        {
+          "id": "monitor",
+          "title": "Monitoring",
+          "description": "Monitor attack progress and service recovery",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Monitor traffic patterns",
+            "Check service availability",
+            "Track mitigation effectiveness",
+            "Document attack details"
+          ],
+          "validationCriteria": [
+            "Attack progress monitored",
+            "Service recovery tracked",
+            "Mitigation effectiveness assessed"
+          ],
+          "nextSteps": ["post-incident"]
+        }
+      ],
+      "expectedOutcomes": [
+        "Recognize DDoS attack patterns and indicators",
+        "Practice traffic analysis techniques",
+        "Learn mitigation strategies and tools",
+        "Understand monitoring and recovery procedures"
+      ],
+      "difficulty": "intermediate",
+      "estimatedDuration": 40,
+      "tags": ["ddos", "traffic-analysis", "mitigation", "availability", "network-security"]
+    },
+    {
+      "id": "data-breach-001",
+      "title": "Data Breach Investigation",
+      "description": "Investigate and respond to a suspected data breach involving unauthorized access to sensitive customer information.",
+      "severity": "critical",
+      "category": {
+        "id": "data-breach",
+        "name": "Data Breach",
+        "description": "Unauthorized access to sensitive data",
+        "commonIndicators": [
+          "Unusual data access patterns",
+          "Database anomalies",
+          "Unauthorized system access",
+          "Data exfiltration indicators"
+        ],
+        "responseProcedures": [
+          "Assess scope of breach",
+          "Contain the incident",
+          "Preserve evidence",
+          "Notify stakeholders",
+          "Comply with regulations",
+          "Implement additional controls"
+        ]
+      },
+      "steps": [
+        {
+          "id": "detect",
+          "title": "Breach Detection",
+          "description": "Identify and confirm the data breach",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Review access logs for anomalies",
+            "Check for unauthorized data access",
+            "Look for data exfiltration indicators",
+            "Analyze system behavior"
+          ],
+          "validationCriteria": [
+            "Breach confirmed",
+            "Affected systems identified",
+            "Data types compromised assessed"
+          ],
+          "nextSteps": ["containment"]
+        },
+        {
+          "id": "contain",
+          "title": "Containment",
+          "description": "Contain the breach and prevent further access",
+          "type": "action",
+          "required": true,
+          "hints": [
+            "Isolate affected systems",
+            "Revoke compromised credentials",
+            "Block unauthorized access",
+            "Preserve evidence"
+          ],
+          "validationCriteria": [
+            "Systems contained",
+            "Access blocked",
+            "Evidence preserved"
+          ],
+          "nextSteps": ["assessment"]
+        },
+        {
+          "id": "assess",
+          "title": "Impact Assessment",
+          "description": "Assess the full scope and impact of the breach",
+          "type": "analysis",
+          "required": true,
+          "hints": [
+            "Determine data types affected",
+            "Assess number of records compromised",
+            "Identify affected individuals",
+            "Evaluate business impact"
+          ],
+          "validationCriteria": [
+            "Scope determined",
+            "Impact assessed",
+            "Affected parties identified"
+          ],
+          "nextSteps": ["notification"]
+        },
+        {
+          "id": "notify",
+          "title": "Notification",
+          "description": "Notify relevant stakeholders and authorities",
+          "type": "communication",
+          "required": true,
+          "hints": [
+            "Notify legal and compliance teams",
+            "Contact law enforcement if required",
+            "Prepare customer notifications",
+            "Document notification process"
+          ],
+          "validationCriteria": [
+            "Stakeholders notified",
+            "Legal requirements met",
+            "Documentation completed"
+          ],
+          "nextSteps": ["remediation"]
+        }
+      ],
+      "expectedOutcomes": [
+        "Understand data breach detection techniques",
+        "Practice containment and evidence preservation",
+        "Learn impact assessment procedures",
+        "Master notification and compliance requirements"
+      ],
+      "difficulty": "advanced",
+      "estimatedDuration": 60,
+      "tags": ["data-breach", "investigation", "compliance", "forensics", "notification"]
+    }
+  ]
+}
