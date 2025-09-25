@@ -1,5 +1,8 @@
 import { Env, AIResponse, ChatMessage, APIResponse, IncidentScenario } from '../../shared/types';
 import { AI_MODELS, ERROR_MESSAGES, SUCCESS_MESSAGES } from '../../shared/constants';
+import { StateManager } from '../state-manager/index';
+
+export { StateManager };
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
