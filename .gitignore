@@ -4,16 +4,41 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Sensitive project files
+PROJECT_PLAN.md
+EdgeIncidentDrill_Complete_Guide.md
+
 # Cloudflare
 .wrangler/
 wrangler.toml.bak
 
-# Environment variables
+# Environment variables and secrets
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env.*.local
+
+# Cloudflare secrets and sensitive config
+wrangler.toml
+*.toml.bak
+secrets.json
+config.json
+
+# API keys and credentials
+api-keys.json
+credentials.json
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Personal notes and documentation
+NOTES.md
+TODO.md
+PERSONAL.md
+PRIVATE.md
 
 # Build outputs
 dist/
