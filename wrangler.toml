@@ -1,0 +1,59 @@
+name = "edge-incident-drill"
+main = "src/workers/ai-assistant/index.ts"
+compatibility_date = "2023-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+[env.production]
+name = "edge-incident-drill-prod"
+
+[env.staging]
+name = "edge-incident-drill-staging"
+
+# AI Assistant Worker
+[[workers]]
+name = "ai-assistant"
+main = "src/workers/ai-assistant/index.ts"
+route = "api/ai/*"
+
+# Workflow Orchestrator Worker
+[[workers]]
+name = "workflow-orchestrator"
+main = "src/workers/workflow-orchestrator/index.ts"
+route = "api/workflow/*"
+
+# State Manager Durable Object
+[[durable_objects.bindings]]
+name = "STATE_MANAGER"
+class_name = "StateManager"
+
+# KV Namespaces
+[[kv_namespaces]]
+binding = "USER_PREFERENCES"
+id = "user_preferences_kv"
+preview_id = "user_preferences_kv_preview"
+
+[[kv_namespaces]]
+binding = "TRAINING_DATA"
+id = "training_data_kv"
+preview_id = "training_data_kv_preview"
+
+# R2 Buckets
+[[r2_buckets]]
+binding = "TRAINING_MATERIALS"
+bucket_name = "training-materials"
+preview_bucket_name = "training-materials-preview"
+
+# AI Models
+[ai]
+binding = "AI"
+
+# Environment Variables
+[vars]
+ENVIRONMENT = "development"
+MAX_CONCURRENT_SESSIONS = "1000"
+AI_MODEL_PRIMARY = "@cf/meta/llama-3.3-70b-instruct"
+AI_MODEL_FAST = "@cf/meta/llama-3.3-8b-instruct"
+
+# Pages Configuration
+[pages]
+build = { command = "npm run build:pages", cwd = "src/pages" }
