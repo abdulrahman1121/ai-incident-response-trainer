@@ -105,9 +105,7 @@ The app has 5 main pages accessible through the top navigation:
 ### 🎯 Training Scenarios Available
 1. **Malware Detection** - Learn to identify and respond to malware
 2. **Phishing Response** - Handle email-based social engineering attacks
-3. **DDoS Mitigation** - Respond to distributed denial of service attacks
 4. **Data Breach** - Manage unauthorized access to sensitive data
-5. **Network Intrusion** - Detect and respond to network security breaches
 
 ## 🔧 Troubleshooting
 
