@@ -1,310 +1,246 @@
-import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { 
-  Send, 
-  Mic, 
-  MicOff, 
-  Bot, 
-  User, 
-  Loader2,
-  Volume2,
-  VolumeX,
-  Settings,
-  Download
-} from 'lucide-react'
-import { useChatStore } from '../stores/chatStore'
-import { useAuthStore } from '../stores/authStore'
-import VoiceInterface from '../components/VoiceInterface'
-import { voiceService } from '../services/voiceService'
+import React, { useState, useRef, useEffect } from 'react';
+import { useTrainingStore } from '../stores/trainingStore';
+import { useAuthStore } from '../stores/authStore';
+import { ScenarioStep } from '../services/mockAIService';
+import ProgressTracker from '../components/ProgressTracker';
 
-const Chat = () => {
-  const [message, setMessage] = useState('')
-  const [isRecording, setIsRecording] = useState(false)
-  const [isVoiceEnabled, setIsVoiceEnabled] = useState(true)
-  const [isTyping, setIsTyping] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
+const Chat: React.FC = () => {
+  const [message, setMessage] = useState('');
+  const [selectedOption, setSelectedOption] = useState<string>('');
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   
-  const { messages, sendMessage, isLoading } = useChatStore()
-  const { user } = useAuthStore()
+  const { 
+    currentScenario, 
+    currentStep, 
+    isTrainingActive, 
+    progress, 
+    chatMessages, 
+    submitAnswer, 
+    getHint, 
+    endTraining,
+    addChatMessage,
+    clearChat
+  } = useTrainingStore();
+  
+  const { user } = useAuthStore();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [chatMessages]);
 
-  const handleSendMessage = async () => {
-    if (!message.trim() || isLoading) return
+  const handleSendMessage = () => {
+    if (!message.trim()) return;
 
-    const userMessage = message.trim()
-    setMessage('')
-    setIsTyping(true)
+    addChatMessage(message, 'user');
+    setMessage('');
+  };
 
-    try {
-      await sendMessage(userMessage, user?.id || 'guest')
-    } catch (error) {
-      console.error('Error sending message:', error)
-    } finally {
-      setIsTyping(false)
-    }
-  }
+  const handleSubmitAnswer = (answer: string) => {
+    const response = submitAnswer(answer);
+    setSelectedOption('');
+  };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      handleSendMessage()
-    }
-  }
+  const handleGetHint = () => {
+    getHint();
+  };
 
-  const handleVoiceTranscript = (transcript: string, confidence: number) => {
-    setMessage(transcript)
-    // Auto-send if confidence is high enough
-    if (confidence > 0.8) {
-      setTimeout(() => {
-        handleSendMessage()
-      }, 1000)
-    }
-  }
+  const handleEndTraining = () => {
+    const finalScore = endTraining();
+    addChatMessage(
+      `Training completed! Final score: ${finalScore.score}/${finalScore.total} (${finalScore.percentage}%)`,
+      'ai'
+    );
+  };
 
-  const handleVoiceCommand = (command: string, parameters: Record<string, any>) => {
-    switch (command) {
-      case 'start_training':
-        // Navigate to training page or start a scenario
-        break
-      case 'next_step':
-        // Move to next step in current training
-        break
-      case 'repeat_instructions':
-        // Repeat current instructions
-        break
-      case 'get_hint':
-        // Get a hint for current step
-        break
-      case 'escalate':
-        // Escalate current situation
-        break
-      case 'pause_session':
-        // Pause current training session
-        break
-      case 'end_session':
-        // End current training session
-        break
-      case 'help':
-        // Show help information
-        break
-      case 'check_status':
-        // Check current training status
-        break
-      default:
-        // Handle general message
-        break
-    }
-  }
+  const formatMessage = (text: string) => {
+    // Simple markdown-like formatting
+    return text
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/\n/g, '<br>');
+  };
 
-  const handleVoiceToggle = () => {
-    setIsVoiceEnabled(!isVoiceEnabled)
+  if (!isTrainingActive || !currentScenario) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-gray-400 mb-4">
+            <svg className="mx-auto h-16 w-16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">No Active Training</h2>
+          <p className="text-gray-600 mb-6">Start a training scenario to begin your incident response practice.</p>
+          <button
+            onClick={() => window.location.href = '/training'}
+            className="btn-primary"
+          >
+            Go to Training
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-4xl mx-auto h-[calc(100vh-8rem)] flex flex-col">
-      {/* Chat Header */}
-      <div className="card mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-primary rounded-lg">
-              <Bot className="h-6 w-6 text-white" />
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Training Header */}
+        <div className="bg-white rounded-lg shadow-soft p-6 mb-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                AI Incident Response Assistant
-              </h1>
-              <p className="text-sm text-gray-500">
-                Powered by Llama 3.3 • Real-time guidance
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">{currentScenario.title}</h1>
+              <p className="text-gray-600">{currentScenario.description}</p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-gray-500">Progress</div>
+              <div className="text-2xl font-bold text-primary-600">
+                {progress.current}/{progress.total}
+              </div>
             </div>
           </div>
           
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={handleVoiceToggle}
-              className={`p-2 rounded-lg transition-colors ${
-                isVoiceEnabled 
-                  ? 'bg-success-100 text-success-600 hover:bg-success-200' 
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {isVoiceEnabled ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-            </button>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <span className={`badge ${
+                currentScenario.difficulty === 'beginner' ? 'bg-success-100 text-success-800' :
+                currentScenario.difficulty === 'intermediate' ? 'bg-warning-100 text-warning-800' :
+                'bg-danger-100 text-danger-800'
+              }`}>
+                {currentScenario.difficulty}
+              </span>
+              <span className="badge bg-secondary-100 text-secondary-800">
+                {currentScenario.category}
+              </span>
+            </div>
             
-            <button className="p-2 rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors">
-              <Settings className="h-5 w-5" />
-            </button>
+            <div className="flex items-center space-x-2">
+              <div className="text-sm text-gray-500">
+                Score: {progress.score}/{progress.total} ({progress.percentage}%)
+              </div>
+              <button
+                onClick={handleEndTraining}
+                className="btn-secondary text-sm"
+              >
+                End Training
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 card overflow-hidden flex flex-col">
-        <div className="flex-1 overflow-y-auto p-6 space-y-4 scrollbar-hide">
-          <AnimatePresence>
-            {messages.map((msg, index) => (
-              <motion.div
-                key={msg.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-                className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
+        {/* Current Step */}
+        {currentStep && (
+          <div className="bg-white rounded-lg shadow-soft p-6 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Step {progress.current} of {progress.total}
+            </h3>
+            <p className="text-gray-700 mb-4">{currentStep.description}</p>
+            
+            {currentStep.options && (
+              <div className="space-y-2">
+                {currentStep.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedOption(option)}
+                    className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                      selectedOption === option
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {option}
+                  </button>
+                ))}
+              </div>
+            )}
+            
+            <div className="flex space-x-3 mt-4">
+              {currentStep.options && (
+                <button
+                  onClick={() => handleSubmitAnswer(selectedOption)}
+                  disabled={!selectedOption}
+                  className="btn-primary"
+                >
+                  Submit Answer
+                </button>
+              )}
+              <button
+                onClick={handleGetHint}
+                className="btn-secondary"
               >
-                <div className={`flex items-start space-x-3 max-w-3xl ${
-                  msg.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                }`}>
-                  <div className={`p-2 rounded-lg ${
-                    msg.type === 'user' 
-                      ? 'bg-primary-600 text-white' 
-                      : 'bg-gray-100 text-gray-600'
-                  }`}>
-                    {msg.type === 'user' ? (
-                      <User className="h-4 w-4" />
-                    ) : (
-                      <Bot className="h-4 w-4" />
-                    )}
-                  </div>
-                  
-                  <div className={`rounded-lg p-4 ${
-                    msg.type === 'user' 
-                      ? 'chat-message-user' 
-                      : msg.type === 'ai'
-                      ? 'chat-message-ai'
-                      : 'chat-message-system'
-                  }`}>
-                    <div className="prose prose-sm max-w-none">
-                      <p className="text-gray-900 whitespace-pre-wrap">
-                        {msg.content}
-                      </p>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs text-gray-500">
-                        {new Date(msg.timestamp).toLocaleTimeString()}
-                      </span>
-                      
-                      {msg.type === 'ai' && msg.metadata?.confidence && (
-                        <span className="text-xs text-gray-500">
-                          Confidence: {Math.round(msg.metadata.confidence * 100)}%
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </AnimatePresence>
-          
-          {isTyping && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-start space-x-3"
-            >
-              <div className="p-2 rounded-lg bg-gray-100 text-gray-600">
-                <Bot className="h-4 w-4" />
-              </div>
-              <div className="chat-message-ai">
-                <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">AI is thinking</span>
-                  <div className="loading-dots">
-                    <div></div>
-                    <div></div>
-                    <div></div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-          
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Voice Interface */}
-        {isVoiceEnabled && (
-          <div className="border-t border-gray-200 p-4">
-            <VoiceInterface
-              onTranscript={handleVoiceTranscript}
-              onCommand={handleVoiceCommand}
-              isEnabled={isVoiceEnabled}
-              showSettings={true}
-              className="mb-4"
-            />
+                Get Hint
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Input Area */}
-        <div className="border-t border-gray-200 p-4">
-          <div className="flex items-end space-x-3">
-            <div className="flex-1">
-              <textarea
-                ref={textareaRef}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Ask about incident response procedures, request guidance, or describe a scenario..."
-                className="input resize-none min-h-[60px] max-h-32"
-                rows={2}
-                disabled={isLoading}
-              />
-            </div>
-            
-            <div className="flex flex-col space-y-2">
-              <button
-                onClick={handleVoiceToggle}
-                disabled={isLoading}
-                className={`p-3 rounded-lg transition-colors ${
-                  isVoiceEnabled
-                    ? 'bg-success-100 text-success-600 hover:bg-success-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
+        {/* Progress Tracker */}
+        <div className="mb-6">
+          <ProgressTracker
+            current={progress.current}
+            total={progress.total}
+            score={progress.score}
+            percentage={progress.percentage}
+          />
+        </div>
+
+        {/* Chat Messages */}
+        <div className="bg-white rounded-lg shadow-soft p-6">
+          <div className="h-96 overflow-y-auto mb-4 space-y-4">
+            {chatMessages.map((msg) => (
+              <div
+                key={msg.id}
+                className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                {isVoiceEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
-              </button>
-              
-              <button
-                onClick={handleSendMessage}
-                disabled={!message.trim() || isLoading}
-                className="btn-primary p-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                ) : (
-                  <Send className="h-5 w-5" />
-                )}
-              </button>
-            </div>
+                <div
+                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                    msg.type === 'user'
+                      ? 'bg-primary-600 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                  }`}
+                >
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: formatMessage(msg.message)
+                    }}
+                  />
+                  <div className={`text-xs mt-1 ${
+                    msg.type === 'user' ? 'text-primary-100' : 'text-gray-500'
+                  }`}>
+                    {msg.timestamp.toLocaleTimeString()}
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
           </div>
-          
-          <div className="flex items-center justify-between mt-3 text-xs text-gray-500">
-            <div className="flex items-center space-x-4">
-              <span>Press Enter to send, Shift+Enter for new line</span>
-              {isVoiceEnabled && (
-                <span className="flex items-center space-x-1">
-                  <Volume2 className="h-3 w-3" />
-                  <span>Voice enabled</span>
-                </span>
-              )}
-            </div>
-            
-            <button className="flex items-center space-x-1 hover:text-gray-700 transition-colors">
-              <Download className="h-3 w-3" />
-              <span>Export chat</span>
+
+          {/* Message Input */}
+          <div className="flex space-x-3">
+            <input
+              type="text"
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Type a message..."
+              className="input flex-1"
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!message.trim()}
+              className="btn-primary"
+            >
+              Send
             </button>
           </div>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Chat
+export default Chat;
