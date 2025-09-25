@@ -63,9 +63,13 @@ The app has 5 main pages accessible through the top navigation:
 #### Step 2: Complete the Training
 1. On the **Chat page**, you'll see the AI assistant ready to help
 2. The AI will present you with the incident scenario
-3. **Type your responses** in the chat input at the bottom
+3. **Answer using any method:**
+   - **Type** your response in the text box
+   - **Speak** your answer using the 🎙️ microphone button
+   - **Choose** from multiple choice options (if available)
 4. The AI will guide you through each step of the incident response process
 5. Follow the AI's instructions and answer its questions
+6. **Session Timer**: You have 5 minutes per session (can be extended)
 
 #### Step 3: Track Your Progress
 1. Click **"Dashboard"** to see your training statistics
@@ -92,7 +96,9 @@ The app has 5 main pages accessible through the top navigation:
 - **Interactive Training Scenarios** - 5 different incident types
 - **AI Chat Interface** - Real-time guidance and feedback
 - **Progress Tracking** - See your training history and stats
-- **Voice Interface** - Click the microphone to use voice commands
+- **Voice Input & Output** - Speak your answers and hear AI responses
+- **Text Input** - Type your responses directly
+- **Session Timer** - 5-minute training sessions with extension option
 - **Responsive Design** - Works on desktop, tablet, and mobile
 - **Persistent Progress** - Your training data is saved locally
 
@@ -118,6 +124,12 @@ The app has 5 main pages accessible through the top navigation:
 
 **Problem:** "Voice doesn't work"
 - **Solution:** Make sure your browser supports Web Speech API (Chrome/Edge work best)
+
+**Problem:** "Session times out too quickly"
+- **Solution:** Click the "Extend Session" button to add 2 more minutes
+
+**Problem:** "Can't type my answer"
+- **Solution:** Use the text input box at the top of the current step section
 
 ### Getting Help
 - Check the browser console (F12) for any error messages
