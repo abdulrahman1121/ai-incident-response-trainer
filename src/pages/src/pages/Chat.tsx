@@ -14,6 +14,8 @@ import {
 } from 'lucide-react'
 import { useChatStore } from '../stores/chatStore'
 import { useAuthStore } from '../stores/authStore'
+import VoiceInterface from '../components/VoiceInterface'
+import { voiceService } from '../services/voiceService'
 
 const Chat = () => {
   const [message, setMessage] = useState('')
@@ -57,9 +59,49 @@ const Chat = () => {
     }
   }
 
-  const handleVoiceToggle = () => {
-    setIsRecording(!isRecording)
-    // Voice recording logic would go here
+  const handleVoiceTranscript = (transcript: string, confidence: number) => {
+    setMessage(transcript)
+    // Auto-send if confidence is high enough
+    if (confidence > 0.8) {
+      setTimeout(() => {
+        handleSendMessage()
+      }, 1000)
+    }
+  }
+
+  const handleVoiceCommand = (command: string, parameters: Record<string, any>) => {
+    switch (command) {
+      case 'start_training':
+        // Navigate to training page or start a scenario
+        break
+      case 'next_step':
+        // Move to next step in current training
+        break
+      case 'repeat_instructions':
+        // Repeat current instructions
+        break
+      case 'get_hint':
+        // Get a hint for current step
+        break
+      case 'escalate':
+        // Escalate current situation
+        break
+      case 'pause_session':
+        // Pause current training session
+        break
+      case 'end_session':
+        // End current training session
+        break
+      case 'help':
+        // Show help information
+        break
+      case 'check_status':
+        // Check current training status
+        break
+      default:
+        // Handle general message
+        break
+    }
   }
 
   const handleVoiceToggle = () => {
@@ -187,6 +229,19 @@ const Chat = () => {
           <div ref={messagesEndRef} />
         </div>
 
+        {/* Voice Interface */}
+        {isVoiceEnabled && (
+          <div className="border-t border-gray-200 p-4">
+            <VoiceInterface
+              onTranscript={handleVoiceTranscript}
+              onCommand={handleVoiceCommand}
+              isEnabled={isVoiceEnabled}
+              showSettings={true}
+              className="mb-4"
+            />
+          </div>
+        )}
+
         {/* Input Area */}
         <div className="border-t border-gray-200 p-4">
           <div className="flex items-end space-x-3">
@@ -208,12 +263,12 @@ const Chat = () => {
                 onClick={handleVoiceToggle}
                 disabled={isLoading}
                 className={`p-3 rounded-lg transition-colors ${
-                  isRecording
-                    ? 'bg-danger-100 text-danger-600 hover:bg-danger-200'
+                  isVoiceEnabled
+                    ? 'bg-success-100 text-success-600 hover:bg-success-200'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {isRecording ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                {isVoiceEnabled ? <Mic className="h-5 w-5" /> : <MicOff className="h-5 w-5" />}
               </button>
               
               <button
