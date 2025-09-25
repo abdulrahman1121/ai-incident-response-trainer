@@ -22,10 +22,10 @@ export interface TTSConfig {
 }
 
 class VoiceService {
-  private recognition: SpeechRecognition | null = null
+  private recognition: any = null
   private synthesis: SpeechSynthesis | null = null
-  private isListening = false
-  private isSpeaking = false
+  private listening = false
+  private speaking = false
   private config: VoiceConfig = {
     language: 'en-US',
     continuous: true,
@@ -40,7 +40,7 @@ class VoiceService {
 
   private initializeSpeechRecognition() {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
       if (SpeechRecognition) {
         this.recognition = new SpeechRecognition()
         this.setupRecognition()
@@ -79,13 +79,13 @@ class VoiceService {
         return
       }
 
-      if (this.isListening) {
+      if (this.listening) {
         reject(new Error('Already listening'))
         return
       }
 
       this.recognition.onstart = () => {
-        this.isListening = true
+        this.listening = true
         resolve()
       }
 
@@ -95,7 +95,7 @@ class VoiceService {
         const confidence = result[0].confidence
         const isFinal = result.isFinal
 
-        const alternatives = Array.from(result).map(alt => alt.transcript)
+        const alternatives = Array.from(result).map((alt: any) => alt.transcript)
 
         onResult({
           transcript,
@@ -105,15 +105,15 @@ class VoiceService {
         })
       }
 
-      this.recognition.onerror = (event) => {
-        this.isListening = false
+      this.recognition.onerror = (event: any) => {
+        this.listening = false
         const errorMessage = this.getErrorMessage(event.error)
         onError?.(errorMessage)
         reject(new Error(errorMessage))
       }
 
       this.recognition.onend = () => {
-        this.isListening = false
+        this.listening = false
         onEnd?.()
       }
 
@@ -126,16 +126,16 @@ class VoiceService {
   }
 
   stopListening(): void {
-    if (this.recognition && this.isListening) {
+    if (this.recognition && this.listening) {
       this.recognition.stop()
-      this.isListening = false
+      this.listening = false
     }
   }
 
   abortListening(): void {
-    if (this.recognition && this.isListening) {
+    if (this.recognition && this.listening) {
       this.recognition.abort()
-      this.isListening = false
+      this.listening = false
     }
   }
 
@@ -153,7 +153,7 @@ class VoiceService {
         return
       }
 
-      if (this.isSpeaking) {
+      if (this.speaking) {
         this.stopSpeaking()
       }
 
@@ -174,18 +174,18 @@ class VoiceService {
       utterance.lang = this.config.language
 
       utterance.onstart = () => {
-        this.isSpeaking = true
+        this.speaking = true
         onStart?.()
       }
 
       utterance.onend = () => {
-        this.isSpeaking = false
+        this.speaking = false
         onEnd?.()
         resolve()
       }
 
-      utterance.onerror = (event) => {
-        this.isSpeaking = false
+      utterance.onerror = (event: any) => {
+        this.speaking = false
         const errorMessage = `Speech synthesis error: ${event.error}`
         onError?.(errorMessage)
         reject(new Error(errorMessage))
@@ -200,14 +200,14 @@ class VoiceService {
   }
 
   stopSpeaking(): void {
-    if (this.synthesis && this.isSpeaking) {
+    if (this.synthesis && this.speaking) {
       this.synthesis.cancel()
-      this.isSpeaking = false
+      this.speaking = false
     }
   }
 
   pauseSpeaking(): void {
-    if (this.synthesis && this.isSpeaking) {
+    if (this.synthesis && this.speaking) {
       this.synthesis.pause()
     }
   }
@@ -254,12 +254,12 @@ class VoiceService {
     return !!(this.recognition && this.synthesis)
   }
 
-  isListening(): boolean {
-    return this.isListening
+  getListeningStatus(): boolean {
+    return this.listening
   }
 
-  isSpeaking(): boolean {
-    return this.isSpeaking
+  getSpeakingStatus(): boolean {
+    return this.speaking
   }
 
   private getErrorMessage(error: string): string {
@@ -399,6 +399,3 @@ class VoiceService {
 
 // Create singleton instance
 export const voiceService = new VoiceService()
-
-// Export types for use in components
-export type { VoiceConfig, VoiceResult, TTSConfig }
