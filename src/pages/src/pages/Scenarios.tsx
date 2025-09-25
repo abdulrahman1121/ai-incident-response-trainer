@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTrainingStore } from '../stores/trainingStore';
 import { TrainingScenario } from '../services/mockAIService';
 
@@ -6,6 +7,7 @@ const Scenarios: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
+  const navigate = useNavigate();
   
   const { scenarios, loadScenarios, isLoading, startTraining } = useTrainingStore();
 
@@ -36,7 +38,7 @@ const Scenarios: React.FC = () => {
   const handleStartTraining = (scenario: TrainingScenario) => {
     const success = startTraining(scenario.id);
     if (success) {
-      window.location.href = '/chat';
+      navigate('/chat');
     } else {
       alert('Failed to start training. Please try again.');
     }

@@ -1,13 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTrainingStore } from '../stores/trainingStore';
 import { useAuthStore } from '../stores/authStore';
 import { ScenarioStep } from '../services/mockAIService';
-import ProgressTracker from '../components/ProgressTracker';
 
 const Chat: React.FC = () => {
   const [message, setMessage] = useState('');
   const [selectedOption, setSelectedOption] = useState<string>('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+  
+  // Add error handling for store access
+  let storeData;
+  try {
+    storeData = useTrainingStore();
+  } catch (error) {
+    console.error('Error accessing training store:', error);
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Training</h2>
+          <p className="text-gray-600 mb-6">There was an error loading the training system.</p>
+          <button
+            onClick={() => navigate('/training')}
+            className="btn-primary"
+          >
+            Go to Training
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   const { 
     currentScenario, 
@@ -20,9 +43,17 @@ const Chat: React.FC = () => {
     endTraining,
     addChatMessage,
     clearChat
-  } = useTrainingStore();
+  } = storeData;
   
   const { user } = useAuthStore();
+
+  // Debug logging
+  console.log('Chat component state:', { 
+    isTrainingActive, 
+    currentScenario: currentScenario?.title, 
+    progress,
+    chatMessagesCount: chatMessages.length 
+  });
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -31,6 +62,7 @@ const Chat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [chatMessages]);
+
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -76,7 +108,7 @@ const Chat: React.FC = () => {
           <h2 className="text-2xl font-bold text-gray-900 mb-2">No Active Training</h2>
           <p className="text-gray-600 mb-6">Start a training scenario to begin your incident response practice.</p>
           <button
-            onClick={() => window.location.href = '/training'}
+            onClick={() => navigate('/training')}
             className="btn-primary"
           >
             Go to Training
@@ -179,13 +211,38 @@ const Chat: React.FC = () => {
         )}
 
         {/* Progress Tracker */}
-        <div className="mb-6">
-          <ProgressTracker
-            current={progress.current}
-            total={progress.total}
-            score={progress.score}
-            percentage={progress.percentage}
-          />
+        <div className="mb-6 bg-white rounded-lg shadow-soft p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-gray-900">Training Progress</h3>
+            <div className="text-sm text-gray-500">
+              {progress.current} of {progress.total} steps
+            </div>
+          </div>
+          
+          <div className="w-full bg-gray-200 rounded-full h-2 mb-3">
+            <div
+              className="bg-primary-600 h-2 rounded-full transition-all duration-300"
+              style={{ width: `${progress.total > 0 ? (progress.current / progress.total) * 100 : 0}%` }}
+            />
+          </div>
+          
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary-600">{progress.score}</div>
+                <div className="text-xs text-gray-500">Correct</div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-gray-600">{progress.total}</div>
+                <div className="text-xs text-gray-500">Total</div>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="text-2xl font-bold text-success-600">{progress.percentage}%</div>
+              <div className="text-xs text-gray-500">Accuracy</div>
+            </div>
+          </div>
         </div>
 
         {/* Chat Messages */}
@@ -211,7 +268,7 @@ const Chat: React.FC = () => {
                   <div className={`text-xs mt-1 ${
                     msg.type === 'user' ? 'text-primary-100' : 'text-gray-500'
                   }`}>
-                    {msg.timestamp.toLocaleTimeString()}
+                    {new Date(msg.timestamp).toLocaleTimeString()}
                   </div>
                 </div>
               </div>

@@ -1,25 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTrainingStore } from '../stores/trainingStore';
 import { useAuthStore } from '../stores/authStore';
 
 const Dashboard: React.FC = () => {
-  const { scenarios, loadScenarios, progress } = useTrainingStore();
+  const { 
+    scenarios, 
+    loadScenarios, 
+    progress, 
+    trainingStats, 
+    getRecentSessions 
+  } = useTrainingStore();
   const { user } = useAuthStore();
-  const [stats, setStats] = useState({
-    totalScenarios: 0,
-    completedScenarios: 0,
-    averageScore: 0,
-    totalTimeSpent: 0
-  });
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadScenarios();
-    
-    // Load mock stats from localStorage
-    const savedStats = localStorage.getItem('training-stats');
-    if (savedStats) {
-      setStats(JSON.parse(savedStats));
-    }
   }, [loadScenarios]);
 
   const getDifficultyStats = () => {
@@ -85,7 +81,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Completed</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.completedScenarios}</p>
+                <p className="text-2xl font-semibold text-gray-900">{trainingStats.completedSessions}</p>
               </div>
             </div>
           </div>
@@ -99,7 +95,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Average Score</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.averageScore}%</p>
+                <p className="text-2xl font-semibold text-gray-900">{trainingStats.averageScore}%</p>
               </div>
             </div>
           </div>
@@ -113,7 +109,7 @@ const Dashboard: React.FC = () => {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Time Spent</p>
-                <p className="text-2xl font-semibold text-gray-900">{stats.totalTimeSpent}m</p>
+                <p className="text-2xl font-semibold text-gray-900">{trainingStats.totalTimeSpent}m</p>
               </div>
             </div>
           </div>
@@ -161,12 +157,42 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Recent Training Sessions */}
+        {trainingStats.completedSessions > 0 && (
+          <div className="mt-8 bg-white rounded-lg shadow-soft p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Training Sessions</h3>
+            <div className="space-y-3">
+              {getRecentSessions(5).map((session) => (
+                <div key={session.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-primary-100 rounded-lg">
+                      <svg className="h-4 w-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">{session.scenarioTitle}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(session.completedAt).toLocaleDateString()} • {session.timeSpent}m
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">{session.percentage}%</p>
+                    <p className="text-sm text-gray-500">{session.score}/{session.totalQuestions}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Quick Actions */}
         <div className="mt-8 bg-white rounded-lg shadow-soft p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button
-              onClick={() => window.location.href = '/training'}
+              onClick={() => navigate('/training')}
               className="btn-primary"
             >
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -176,7 +202,7 @@ const Dashboard: React.FC = () => {
             </button>
             
             <button
-              onClick={() => window.location.href = '/scenarios'}
+              onClick={() => navigate('/scenarios')}
               className="btn-secondary"
             >
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -186,7 +212,7 @@ const Dashboard: React.FC = () => {
             </button>
             
             <button
-              onClick={() => window.location.href = '/chat'}
+              onClick={() => navigate('/chat')}
               className="btn-ghost"
             >
               <svg className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
