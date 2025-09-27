@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd src/pages && npm run build",
+  "outputDirectory": "src/pages/dist",
+  "installCommand": "npm install && cd src/pages && npm install",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

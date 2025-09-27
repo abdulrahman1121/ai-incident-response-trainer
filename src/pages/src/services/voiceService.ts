@@ -89,7 +89,7 @@ class VoiceService {
         resolve()
       }
 
-      this.recognition.onresult = (event) => {
+      this.recognition.onresult = (event: any) => {
         const result = event.results[event.results.length - 1]
         const transcript = result[0].transcript
         const confidence = result[0].confidence

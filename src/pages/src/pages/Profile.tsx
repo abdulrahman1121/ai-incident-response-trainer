@@ -31,16 +31,16 @@ const Profile = () => {
   })
 
   const [preferences, setPreferences] = useState({
-    voiceEnabled: user?.preferences?.voiceEnabled || true,
+    voiceEnabled: user?.preferences?.voiceEnabled ?? true,
     preferredLanguage: user?.preferences?.preferredLanguage || 'en',
     trainingFocus: user?.preferences?.trainingFocus || [],
     uiTheme: user?.preferences?.uiTheme || 'auto'
   })
 
   const [notifications, setNotifications] = useState({
-    email: user?.preferences?.notificationSettings?.email || true,
-    push: user?.preferences?.notificationSettings?.push || true,
-    voice: user?.preferences?.notificationSettings?.voice || false,
+    email: user?.preferences?.notificationSettings?.email ?? true,
+    push: user?.preferences?.notificationSettings?.push ?? true,
+    voice: user?.preferences?.notificationSettings?.voice ?? false,
     frequency: user?.preferences?.notificationSettings?.frequency || 'immediate'
   })
 
